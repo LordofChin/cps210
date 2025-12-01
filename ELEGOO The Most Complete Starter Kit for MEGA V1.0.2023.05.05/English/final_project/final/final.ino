@@ -52,21 +52,21 @@
       case 0xBB44FF00: Serial.println("FAST BACK");    break;
       case 0xBF40FF00: Serial.println("PAUSE");    break;
       case 0xBC43FF00: Serial.println("FAST FORWARD");   break;
-      case 0xF807FF00: Serial.println("DOWN"); key = "*"   break;
+      case 0xF807FF00: Serial.println("DOWN"); *key = '*';   break;
       case 0xEA15FF00: Serial.println("VOL-");    break;
-      case 0xF609FF00: Serial.println("UP"); key = '#'   break;
+      case 0xF609FF00: Serial.println("UP"); *key = '#';   break;
       case 0xE619FF00: Serial.println("EQ");    break;
       case 0xF20DFF00: Serial.println("ST/REPT");    break;
-      case 0xE916FF00: Serial.println("0"); key = '0';    break;
-      case 0xF30CFF00: Serial.println("1"); key = '1'   break;
-      case 0xE718FF00: Serial.println("2"); key = '2'   break;
-      case 0xA15EFF00: Serial.println("3"); key = '3'   break;
-      case 0xF708FF00: Serial.println("4"); key = '4'   break;
-      case 0xE31CFF00: Serial.println("5"); key = '5'   break;
-      case 0xA55AFF00: Serial.println("6"); key = '6'   break;
-      case 0xBD42FF00: Serial.println("7"); key = '7'   break;
-      case 0xAD52FF00: Serial.println("8"); key = '8'   break;
-      case 0xB54AFF00: Serial.println("9"); key = '9'   break;
+      case 0xE916FF00: Serial.println("0"); *key = '0';    break;
+      case 0xF30CFF00: Serial.println("1"); *key = '1';   break;
+      case 0xE718FF00: Serial.println("2"); *key = '2';   break;
+      case 0xA15EFF00: Serial.println("3"); *key = '3';   break;
+      case 0xF708FF00: Serial.println("4"); *key = '4';   break;
+      case 0xE31CFF00: Serial.println("5"); *key = '5';   break;
+      case 0xA55AFF00: Serial.println("6"); *key = '6';   break;
+      case 0xBD42FF00: Serial.println("7"); *key = '7';   break;
+      case 0xAD52FF00: Serial.println("8"); *key = '8';   break;
+      case 0xB54AFF00: Serial.println("9"); *key = '9';   break;
       default:
         Serial.println(" other button   ");
     }// End Case
@@ -89,12 +89,13 @@
   MFRC522::MIFARE_Key key;
 
  
-
+int string_pointer = 0;
+char string[17] = {};
 void setup()
 {
+
   // Serial
     Serial.begin( 9600 );
-
   // lcd
     // set up the LCD's number of columns and rows:
     lcd.begin( 16, 2 );
@@ -118,14 +119,12 @@ void setup()
     myservo.attach(9);
     myservo.write(90);// move servos to center position -> 90°
 }
-  
+
+
 void loop()
 {
   // passkey vars
     char key = customKeypad.getKey(); //populate key with keypad entry if present
-    char key = (key)? key: irrecv.decode(); 
-    char [] string = [17];
-    int string_pointer = 0;
 
   // remote populate 
     if ( irrecv.decode() ) // have we received an IR signal?
@@ -137,11 +136,10 @@ void loop()
   // keypad 
     if (key)
     {
-      if(string_pointer < 14)
-        string[string_pointer++] = key;
-      else 
+      if(string_pointer > 15)      
         string_pointer = 0;
-        string[string_pointer++] = key
+      string[string_pointer++] = key;
+      Serial.println(string);
     }
 
 
