@@ -21,7 +21,7 @@
 #include <Servo.h>
   Servo myservo;
 
-#include "IRremote.h"
+#include <IRremote.h>
   int receiver = 13; // Signal Pin of IR receiver to Arduino Digital Pin 11
 
   /*-----( Declare objects )-----*/
@@ -89,7 +89,7 @@
   MFRC522::MIFARE_Key key;
 
  
-int string_pointer = 0;
+int string_pointer = 1;
 char string[17] = {};
 void setup()
 {
@@ -99,8 +99,11 @@ void setup()
   // lcd
     // set up the LCD's number of columns and rows:
     lcd.begin( 16, 2 );
+    string[0] = '^';
+    string[1] = '$';
+    string [2] = NULL;
     // Print a message to the LCD.
-    lcd.print( "Hello, World!" );
+    lcd.print( "Enter < 6d code!" );
   // remote
     Serial.println( "IR Receiver Button Decode" );
     irrecv.enableIRIn(); // Start the receiver
@@ -119,7 +122,20 @@ void setup()
     myservo.attach(9);
     myservo.write(90);// move servos to center position -> 90°
 }
+//password
+   char *password = '^072905$';
 
+int check_pass(char *pass)
+{
+    if(pass[0] != '^')
+        return 0;
+    for(int i = 1; password[i] != '\0'; i++){
+        Serial.print(password[i]);
+        Serial.println(pass[i-1]);
+        if(pass[i-1] != password[i]) return 0;
+        }
+    return 1;
+}
 
 void loop()
 {
@@ -127,27 +143,35 @@ void loop()
     char key = customKeypad.getKey(); //populate key with keypad entry if present
 
   // remote populate 
+  /*
     if ( irrecv.decode() ) // have we received an IR signal?
     {
       translateIR(&key); // override key with IR entry if present
       irrecv.resume(); // receive the next value
     } 
-
+*/
   // keypad 
     if (key)
     {
-      if(string_pointer > 15)      
-        string_pointer = 0;
-      string[string_pointer++] = key;
-      Serial.println(string);
+
+      if(string_pointer > 6 || key == '*')      
+        string_pointer = 1;
+      else if(key == '#') 
+        Serial.print((check_pass(string)) ? "WRONG!\n" : "unlocking...\n");
+  
+ 
+      if (key <= '9' && key >= '0') 
+      {
+        string[string_pointer++] = key;
+        string[string_pointer] = '$'; 
+        string[string_pointer + 1] = NULL;
+        Serial.println(string);
+      }
     }
 
 
   // lcd
-    // set the cursor to column 0, line 1
-    // (note: line 1 is the second row, since counting begins with 0):
-    lcd.setCursor(0, 1);
-    // print the number of seconds since reset:
+    lcd.setCursor(1, 1);
     lcd.print( string );
 
 /*
